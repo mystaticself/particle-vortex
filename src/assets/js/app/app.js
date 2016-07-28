@@ -1,13 +1,9 @@
 'use strict';
 
-// import * as utils from '../utils/utils';
-// import * as threeUtils from '../utils/three-utils';
 import {randomRange, randomInt} from '../utils/utils';
 import {getDataTexture, getMouseWorldPos} from '../utils/three-utils';
 import Loader from '../utils/loader';
-import EffectsManager from '../post/effects-manager';
 import GPGPU from './gpgpu';
-// import FBO from './fbo';
 
 const glslify = require('glslify');
 const Stats = require('../libs/stats.min');
@@ -17,7 +13,6 @@ let scope,
     camera,
     renderer,
     container,
-    effectsManager,
     mousePos,
     gpgpu,
     mesh,
@@ -37,7 +32,6 @@ export default class App
         mousePos = new THREE.Vector3(0, 0, 0.5);
 
         this.createBaseElements();
-        // this.createEffects();
         this.addListeners();
         // this.addStats();
 
@@ -45,15 +39,10 @@ export default class App
             {file:'assets/img/particle.png', id:'particle'}
         ];
         this.loadAssets(manifest, function(assets){
-            // console.log('assets:', assets);
             scope.createScene(assets);
             scope.handleResize();
             scope.update();
         });
-
-        // this.createScene();
-        // this.handleResize();
-        // this.update();
     }
 
     loadAssets(manifest, callback)
@@ -74,7 +63,6 @@ export default class App
             height = window.innerHeight;
 
         scene = new THREE.Scene();
-        // camera = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, 0.1, 10000);
         camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
         camera.position.z = 350;
 
@@ -102,7 +90,7 @@ export default class App
             data1[i + 3] = 0;
 
             data2[i + 0] = randomRange(0.1, 0.9);
-            data2[i + 1] = randomInt(1, 6);//randomInt(1, 3);
+            data2[i + 1] = randomInt(1, 6);
             data2[i + 2] = 0;
             data2[i + 3] = 0;
         }
@@ -166,15 +154,6 @@ export default class App
             size: texSize,
             format: format
         });
-
-        // fbo = new FBO({
-        //     renderer: renderer,
-        //     simulationMaterial: simulationMaterial,
-        //     renderMaterial: renderMaterial,
-        //     size: texSize,
-        //     format: format
-        // });
-        // scene.add(fbo.mesh);
     }
 
     addListeners()
@@ -182,11 +161,6 @@ export default class App
         window.addEventListener('resize', this.handleResize, false);
         window.addEventListener('orientationchange', this.handleResize, false);
         window.addEventListener('mousemove', this.handleMouseMove, false);
-        // window.addEventListener('mousedown', this.handleMouseDown, false);
-        // window.addEventListener('mouseup', this.handleMouseUp, false);
-        // window.addEventListener('touchmove', this.handleTouchMove, false);
-        // window.addEventListener('touchstart', this.handleTouchStart, false);
-        // window.addEventListener('touchend', this.handleTouchEnd, false);
     }
 
     removeListeners()
@@ -194,11 +168,6 @@ export default class App
         window.removeEventListener('resize', this.handleResize);
         window.removeEventListener('orientationchange', this.handleResize);
         window.removeEventListener('mousemove', this.handleMouseMove);
-        // window.removeEventListener('mousedown', this.handleMouseDown);
-        // window.removeEventListener('mouseup', this.handleMouseUp);
-        // window.removeEventListener('touchmove', this.handleTouchMove);
-        // window.removeEventListener('touchstart', this.handleTouchStart);
-        // window.removeEventListener('touchend', this.handleTouchEnd);
     }
 
     addStats()
@@ -210,15 +179,6 @@ export default class App
         document.body.appendChild(stats.domElement);
     }
 
-    createEffects()
-    {
-        effectsManager = new EffectsManager({
-            renderer: renderer,
-            camera: camera,
-            scene: scene
-        });
-    }
-
     handleResize(e)
     {
         let width = window.innerWidth,
@@ -228,11 +188,6 @@ export default class App
 
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
-
-        if(effectsManager)
-        {
-            effectsManager.resize(width, height);
-        }
     }
 
     handleMouseMove(e)
@@ -241,61 +196,14 @@ export default class App
         mousePos.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
     }
 
-    // handleMouseDown(e)
-    // {
-
-    // }
-
-    // handleMouseUp(e)
-    // {
-
-    // }
-
-    // handleTouchMove(e)
-    // {
-    //     let touchObj = e.changedTouches[0];
-    //     scope.handleMouseMove(touchObj);
-    // }
-
-    // handleTouchStart(e)
-    // {
-    //     let touchObj = e.changedTouches[0];
-    //     scope.handleMouseDown(touchObj);
-    // }
-
-    // handleTouchEnd(e)
-    // {
-    //     let touchObj = e.changedTouches[0];
-    //     scope.handleMouseUp(touchObj);
-    // }
-
     update()
     {
         simulationMaterial.uniforms.time.value += 0.001;
-
         simulationMaterial.uniforms.mousePosition.value = getMouseWorldPos(mousePos, camera);
-        // console.log(simulationMaterial.uniforms.mousePosition.value);
-        // simulationMaterial.uniforms.rotation.value = 0.05;
-        // console.log(mouseWorldPos.x, mouseWorldPos.y);
-
-        // simulationMaterial.uniforms.curlScale.value += (1 - simulationMaterial.uniforms.curlScale.value) * 0.01;
 
         gpgpu.update('tPositions');
-        // mesh.rotation.x += 0.01;
-        // mesh.rotation.y += 0.01;
 
-        // fbo.update();
-        // fbo.mesh.rotation.x += 0.01;
-        // fbo.mesh.rotation.y -= 0.01;
-
-        if(effectsManager)
-        {
-            effectsManager.update();
-        }
-        else
-        {
-            renderer.render(scene, camera);
-        }
+        renderer.render(scene, camera);
 
         if(stats)
         {
@@ -307,7 +215,6 @@ export default class App
 
     dispose()
     {
-        // TODO - clean up geometry
         removeListeners();
     }
 }
