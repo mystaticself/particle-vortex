@@ -35,7 +35,7 @@ export default class GPGPU
         const options = {
             minFilter: THREE.NearestFilter,
             magFilter: THREE.NearestFilter,
-            type: THREE.FloatType,
+            type: THREE.HalfFloatType,
             format: format,
             // depth: false,
             stencil: false
